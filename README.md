@@ -1,3 +1,5 @@
+[![R-CMD-check.yaml](https://github.com/kpassadis/solar4r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/kpassadis/solar4r/actions/workflows/R-CMD-check.yaml)
+
 # solar4r <img src="man/figures/logo.png" align="right" height="139" />
 
 # solar4r: Solar Power Forecasting with SVR and Adaptive Conformal Prediction
