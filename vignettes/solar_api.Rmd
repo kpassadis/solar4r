@@ -1,0 +1,99 @@
+---
+title: "Example using the high level API with actual solar production data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example using the high level API with actual solar production data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette demonstrates how to make predictions using the solar4r package on a 2600 MW capacity real dataset.
+The example uses the high-level API.
+
+The first example demonstrates the data preparation process. In order to fit a model it is necessary to call the prepare_data. This function will automatically add some time related features to the data frame that will be used to train the model.
+The simplest way to call the API is to provide a data frame and the name of the column that refers to the timestamp. The timestamp needs to be of type POSIXct or POSIXt. The function returns a list that by default contains two data frames, one that will be used for model training and one for model testing.
+
+```{r}
+library(solar4r)
+
+set.seed(38)
+model <- SolarModel$new(lat = 37.983810, lon = 23.727539, capacity = 2600, period = 15)
+df_list <- model$prepare_data(solar, "tstamp", pv ~ temp + irrad * clds)
+```
+
+The prop_cal argument is used to specify what proportion of the data should be assigned to a seperate dataset called calibration dataset. This can be used if it is desirable to calculate uncertainties in predictions. If the prop_cal is given a value larger than zero (default value is 0), then the list returned from calling the method prepare_data returns a list that contains three dataframes.
+
+```{r}
+set.seed(38)
+model <- SolarModel$new(lat = 37.983810, lon = 23.727539, capacity = 2600, period = 15)
+df_list <- model$prepare_data(solar, "tstamp", pv ~ temp + irrad * clds, prop_cal = 0.1)
+names(df_list)
+```
+
+
+The class provides the functionality to detect outliers in the training set by setting the value of the argument detect_outliers to TRUE and passing the column names of the data frame that the model should consider as a named argument, col_names.
+It is possible to remove the outlier from the training data frame by setting the drop_outliers to TRUE (however it is always a best practice to investigate before removing).
+
+```{r}
+data(solar)
+model <- SolarModel$new(lat = 37.983810, lon = 23.727539, capacity = 2600, period = 15)
+df_list <- model$prepare_data(solar, "tstamp", pv ~ temp + irrad * clds, prop_cal = 0.1, detect_outliers = TRUE, col_names = c("pv", "irrad", "temp", "clds"))
+
+print(colnames(df_list$train))
+
+```
+
+The example below depicts the model training process using the e1071 built-in tuning method (sequential).
+
+```{r, eval = FALSE}
+
+data(solar)
+
+set.seed(38)
+model <- SolarModel$new(lat = 37.983810, lon = 23.727539, capacity = 2600, period = 15)
+df_list <- model$prepare_data(solar, "tstamp", pv ~ temp + irrad * clds, method = "gaussian", prop = 0.9, prop_cal = 0.1, detect_outliers = TRUE)
+results <- model$fit(df_list$train, df_list$test)
+preds <- model$predict(df_list$test)
+
+colnames(preds)
+```
+
+The example above under the hood fits a model using the e1071::tune function which basically tries to find the optimal configuration of the SVM model given a hyperperameter grid. This is is very convenient but slow as the search happens sequentially, not taking advantage of the modern multi core CPUs. 
+
+The package provides the capability to activate the parallel tuning set the PARALLEL flag to TRUE. This will spawn worker processes using the parallel package and will collect and return the results in a list.
+Running in parallel in a modern CPU is much faster than the built-in tuning method. 
+
+```{r, eval = FALSE}
+
+data(solar)
+
+set.seed(38)
+model <- SolarModel$new(lat = 37.983810, lon = 23.727539, capacity = 2600, period = 15)
+df_list <- model$prepare_data(solar, "tstamp", pv ~ temp + irrad * clds, method = "gaussian", prop = 0.8, prop_cal = 0.1, detect_outliers = TRUE)
+dense_grid <- list(cost = 2^seq(-2, 8, by = 1), gamma = 2^seq(-7, 2, by = 1))
+coarse_grid = list(cost = 2^(1:5), gamma = 2^seq(-2, 1, by = 1))
+results <- with(df_list, {
+    model$fit(train, test, parallel = TRUE, train_grid = coarse_grid)
+  }
+)
+
+results <- generate_performance_report(df_list$test, model, "raw")
+
+```
+
+**Expected Output**
+```text
+Parallel tuning started
+starting parallel training of 40 models
+Best Params: Cost=4, Gamma=1
+Model trained successfully. Switching to 'eval' mode.
+Calibrating adaptive conformal intervals...
+Conformal Multiplier (q_hat) calibrated: 839.33
+```

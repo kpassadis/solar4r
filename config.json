@@ -1,0 +1,43 @@
+{
+    "mode":null,
+    "tstamp":null,
+    "fmt":"%Y-%m-%d %H:%M:%S",
+    "input_file": null,
+    "output_file":null,
+    "model_file":"C:/Users/k.passadis/Documents/data/model.rds",
+    "new": {
+        "lat": 37.983810,
+        "lon": 23.727539,
+        "cap": 2600,
+        "period": 15,
+        "tz": "UTC", 
+        "metrics": ["rmse", "nmae", "mae"]
+    },
+    "prepare_data": {
+        "model_formula": "pv ~ irrad + clds + temp",
+        "input_file":null,
+        "beta": 0.01,
+        "prop": 0.7,
+        "prop_cal": 0.1,
+        "method":"laplacian",
+        "add_weights":false,
+        "detect_outliers":true,
+        "drop_outliers":false,
+        "perc_conf":99,
+        "col_names":["pv", "irrad", "clds", "temp"]
+    },
+    "fit": {
+        "parallel": true,
+        "n_folds": 5,
+        "train_grid": {
+            "cost": [0.25, 0.5, 1, 2, 4],
+            "gamma": [0.01, 0.1, 0.5]
+        },
+        "ctrl":{
+            "sampling":"cross",
+            "cross":5,
+            "nrepeat":1
+        }
+        
+    }
+}

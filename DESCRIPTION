@@ -1,0 +1,28 @@
+Package: solar4r
+Title: Machine Learning Tools for Solar Power Imputation and Forecasting
+Version: 0.1.0
+Authors@R: 
+    person("Kostas", "Passadis", , "kpassadis@gmail.com", role = c("aut", "cre"))
+Description: A specialized toolkit for national-grid scale solar power forecasting. 
+    Includes physically-informed feature engineering using optimized beta-weights 
+    to account for hardware geometry, solar geometry calculations, and 
+    Support Vector Machine (SVM) regression for curtailment imputation.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+VignetteBuilder: knitr
+Imports: 
+    dplyr,
+    e1071,
+    lubridate,
+    parallel,
+    R6,
+    suncalc
+Suggests: 
+    jsonlite,
+    knitr,
+    rmarkdown
+Depends: 
+    R (>= 3.5)
+LazyData: true

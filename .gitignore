@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+.Rbuildignore
+inst/doc/
+solar4r.Rcheck/
+.DS_Store
