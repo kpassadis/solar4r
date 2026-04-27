@@ -17,7 +17,7 @@ RUN R -e "install.packages('remotes')"
 
 # Install the package from GitHub
 # REPLACE 'yourusername/solar4r' with your actual GitHub handle
-RUN R -e "remotes::install_github('yourusername/solar4r', upgrade='never', force=TRUE)"
+RUN R -e "remotes::install_github('kpassadis/solar4r', upgrade='never', force=TRUE)"
 
 # Copy ONLY the entrypoint and config (keeps the image light)
 # We don't need the full source code in the image anymore!
